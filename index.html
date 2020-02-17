@@ -18,6 +18,11 @@
                 return xx;
             }
             function display(dt) {
+                if (isNaN(dt)) {
+                    display(0);
+                    return;
+                }
+
                 var text;
                 if (dt<0) {
                     text="-";
