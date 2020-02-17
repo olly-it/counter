@@ -1,0 +1,107 @@
+<html>
+    <body>
+        <div id="counter" style="font-family: monospace; font-size: 23vw;"></div>
+        <div>
+            <input id="minutes" type="text" value="5" size="4" oninput="update();"/>min&nbsp;&nbsp;
+            <input id="start" type="button" value="start" onclick="start();"/>
+            <input id="stop" type="button" value="stop" onclick="stop();"/>
+        </div>
+        <script>
+            var TIMEOUT=50;
+            var endTime;
+            var currTimer;
+            var running=false;
+            var reset=true;
+            var lastValue;
+            function two(xx) {
+                if (xx<10) return "0"+xx;
+                return xx;
+            }
+            function display(dt) {
+                var text;
+                if (dt<0) {
+                    text="-";
+                } else {
+                    text="&nbsp;";
+                }
+
+                //text color
+                document.getElementById("counter").style.color="#000000";
+                if (dt<30000) document.getElementById("counter").style.color="#880000";
+                if (dt<0) document.getElementById("counter").style.color="#FF0000";
+
+                //time
+                dt = Math.abs(dt);
+                mm=Math.trunc(dt/60000);
+                ss=Math.trunc((dt-mm*60000)/1000);
+                millis=Math.trunc((dt%1000)/100);
+                if (!running || millis>=5) blink=":"
+                else blink=" ";
+
+                //display
+                text+= two(mm)+blink+two(ss);//+"."+millis;
+                document.getElementById("counter").innerHTML=text;
+            }
+            function refresh() {
+                var diff = endTime-Date.now();
+                display(diff);
+            }
+            function getMin() {
+                return document.getElementById("minutes").value*60*1000;
+            }
+            function start() {
+                if (!running) {
+                    if (reset) {
+                        endTime = Date.now()+getMin();
+                        reset=false;
+                    } else {
+                        endTime = Date.now()+lastValue;
+                    }
+                    currTimer = setInterval(refresh, TIMEOUT);
+                    running=true;
+                    document.getElementById("start").value="pause";
+                } else {
+                    clearInterval(currTimer);
+                    lastValue = endTime-Date.now();
+                    running=false;
+                    document.getElementById("start").value="resume";
+                    refresh();
+                }
+                document.getElementById("stop").disabled=false;
+                document.getElementById("minutes").disabled=true;
+            }
+            function stop() {
+                clearInterval(currTimer);
+                running=false;
+                reset=true;
+                //buttons
+                document.getElementById("start").value="start";
+                document.getElementById("stop").disabled=true;
+                document.getElementById("minutes").disabled=false;
+                display(getMin());
+                //focus
+                document.getElementById("minutes").focus();
+            }
+            function update() {
+                if (!running) display(getMin());
+            }
+            function key(e) {
+                switch (event.keyCode) {
+                    case 13:
+                        stop();
+                    break;
+                    case 32:
+                        //space
+                        start();
+                    break;
+                }
+            }
+
+            // listener for <return> action
+            document.addEventListener("keypress", key, false);
+
+            // set default
+            stop();
+        </script>
+    </body>
+</html>
